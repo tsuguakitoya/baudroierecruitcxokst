@@ -205,6 +205,47 @@
             border: none;
         }
         
+        .iframe-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            display: flex;
+            justify-content: flex-end;
+            align-items: flex-start;
+            padding: 10px;
+        }
+        
+        .fullscreen-button {
+            pointer-events: auto;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            padding: 0;
+            opacity: 0.8;
+            z-index: 10;
+        }
+        
+        .fullscreen-button:hover, .fullscreen-button:focus {
+            background-color: rgba(0, 0, 0, 0.8);
+            opacity: 1;
+        }
+        
+        .fullscreen-button svg {
+            width: 18px;
+            height: 18px;
+        }
+        
         /* Fullscreen and zoom controls */
         .embed-controls {
             display: flex;
@@ -438,6 +479,16 @@
                         allowfullscreen="allowfullscreen" 
                         allow="fullscreen">
                     </iframe>
+                    <div class="iframe-overlay">
+                        <button class="fullscreen-button" aria-label="フルスクリーン表示">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M8 3H5a2 2 0 0 0-2 2v3"></path>
+                                <path d="M21 8V5a2 2 0 0 0-2-2h-3"></path>
+                                <path d="M3 16v3a2 2 0 0 0 2 2h3"></path>
+                                <path d="M16 21h3a2 2 0 0 0 2-2v-3"></path>
+                            </svg>
+                        </button>
+                    </div>
                 </div>
                 <div class="embed-controls">
                     <button class="control-button" id="zoomIn">
@@ -485,9 +536,11 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const wrapper = document.getElementById('canvaWrapper');
+            const canvaFrame = document.getElementById('canvaFrame');
             const zoomInBtn = document.getElementById('zoomIn');
             const zoomOutBtn = document.getElementById('zoomOut');
             const resetZoomBtn = document.getElementById('resetZoom');
+            const fullscreenBtn = document.querySelector('.fullscreen-button');
             
             let currentScale = 1;
             const maxScale = 3;
@@ -499,24 +552,43 @@
             let initialScale = 1;
             
             // Handle button controls
-            zoomInBtn.addEventListener('click', function() {
-                if (currentScale < maxScale) {
-                    currentScale += scaleStep;
-                    updateScale();
-                }
-            });
+            if (zoomInBtn) {
+                zoomInBtn.addEventListener('click', function() {
+                    if (currentScale < maxScale) {
+                        currentScale += scaleStep;
+                        updateScale();
+                    }
+                });
+            }
             
-            zoomOutBtn.addEventListener('click', function() {
-                if (currentScale > minScale) {
-                    currentScale -= scaleStep;
-                    updateScale();
-                }
-            });
+            if (zoomOutBtn) {
+                zoomOutBtn.addEventListener('click', function() {
+                    if (currentScale > minScale) {
+                        currentScale -= scaleStep;
+                        updateScale();
+                    }
+                });
+            }
             
-            resetZoomBtn.addEventListener('click', function() {
-                currentScale = 1;
-                updateScale();
-            });
+            if (resetZoomBtn) {
+                resetZoomBtn.addEventListener('click', function() {
+                    currentScale = 1;
+                    updateScale();
+                });
+            }
+            
+            // Fullscreen button
+            if (fullscreenBtn) {
+                fullscreenBtn.addEventListener('click', function() {
+                    if (canvaFrame.requestFullscreen) {
+                        canvaFrame.requestFullscreen();
+                    } else if (canvaFrame.webkitRequestFullscreen) { /* Safari */
+                        canvaFrame.webkitRequestFullscreen();
+                    } else if (canvaFrame.msRequestFullscreen) { /* IE11 */
+                        canvaFrame.msRequestFullscreen();
+                    }
+                });
+            }
             
             // Update the scale of the wrapper
             function updateScale() {
@@ -533,24 +605,26 @@
             }
             
             // Handle pinch to zoom on mobile
-            wrapper.addEventListener('touchstart', function(e) {
-                if (e.touches.length === 2) {
-                    initialDistance = getDistance(e.touches[0], e.touches[1]);
-                    initialScale = currentScale;
-                    e.preventDefault();
-                }
-            }, { passive: false });
-            
-            wrapper.addEventListener('touchmove', function(e) {
-                if (e.touches.length === 2) {
-                    const currentDistance = getDistance(e.touches[0], e.touches[1]);
-                    const scaleChange = currentDistance / initialDistance;
-                    
-                    currentScale = Math.min(Math.max(initialScale * scaleChange, minScale), maxScale);
-                    updateScale();
-                    e.preventDefault();
-                }
-            }, { passive: false });
+            if (wrapper) {
+                wrapper.addEventListener('touchstart', function(e) {
+                    if (e.touches.length === 2) {
+                        initialDistance = getDistance(e.touches[0], e.touches[1]);
+                        initialScale = currentScale;
+                        e.preventDefault();
+                    }
+                }, { passive: false });
+                
+                wrapper.addEventListener('touchmove', function(e) {
+                    if (e.touches.length === 2) {
+                        const currentDistance = getDistance(e.touches[0], e.touches[1]);
+                        const scaleChange = currentDistance / initialDistance;
+                        
+                        currentScale = Math.min(Math.max(initialScale * scaleChange, minScale), maxScale);
+                        updateScale();
+                        e.preventDefault();
+                    }
+                }, { passive: false });
+            }
             
             // Calculate distance between two touch points
             function getDistance(touch1, touch2) {
