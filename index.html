@@ -192,6 +192,8 @@
             overflow: hidden;
             border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transform-origin: 0 0;
+            touch-action: manipulation;
         }
         
         .canva-wrapper iframe {
@@ -201,6 +203,37 @@
             width: 100%;
             height: 100%;
             border: none;
+        }
+        
+        /* Fullscreen and zoom controls */
+        .embed-controls {
+            display: flex;
+            justify-content: center;
+            margin-top: 10px;
+            gap: 15px;
+        }
+        
+        .control-button {
+            background-color: rgba(240,138,75,0.1);
+            border: 1px solid rgba(240,138,75,0.3);
+            color: var(--primary-color);
+            border-radius: 4px;
+            padding: 5px 12px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.2s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        .control-button:hover, .control-button:active {
+            background-color: rgba(240,138,75,0.2);
+        }
+        
+        .control-icon {
+            font-size: 1.1rem;
         }
         
         /* Entry Button Large */
@@ -399,12 +432,23 @@
     <main class="main-content">
         <div class="content-container">
             <div class="canva-container">
-                <div class="canva-wrapper">
-                    <iframe loading="lazy" 
+                <div class="canva-wrapper" id="canvaWrapper">
+                    <iframe loading="lazy" id="canvaFrame"
                         src="https://www.canva.com/design/DAGhleOMulI/nVpNXUHT83KXk3n_G4VmbQ/view?embed" 
                         allowfullscreen="allowfullscreen" 
                         allow="fullscreen">
                     </iframe>
+                </div>
+                <div class="embed-controls">
+                    <button class="control-button" id="zoomIn">
+                        <span class="control-icon">+</span> 拡大
+                    </button>
+                    <button class="control-button" id="zoomOut">
+                        <span class="control-icon">-</span> 縮小
+                    </button>
+                    <button class="control-button" id="resetZoom">
+                        <span class="control-icon">↺</span> リセット
+                    </button>
                 </div>
             </div>
             
@@ -437,5 +481,84 @@
             <div class="footer-shape"></div>
         </div>
     </footer>
+    <!-- JavaScript for zoom functionality -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const wrapper = document.getElementById('canvaWrapper');
+            const zoomInBtn = document.getElementById('zoomIn');
+            const zoomOutBtn = document.getElementById('zoomOut');
+            const resetZoomBtn = document.getElementById('resetZoom');
+            
+            let currentScale = 1;
+            const maxScale = 3;
+            const minScale = 1;
+            const scaleStep = 0.2;
+            
+            // Initialize touch events
+            let initialDistance = 0;
+            let initialScale = 1;
+            
+            // Handle button controls
+            zoomInBtn.addEventListener('click', function() {
+                if (currentScale < maxScale) {
+                    currentScale += scaleStep;
+                    updateScale();
+                }
+            });
+            
+            zoomOutBtn.addEventListener('click', function() {
+                if (currentScale > minScale) {
+                    currentScale -= scaleStep;
+                    updateScale();
+                }
+            });
+            
+            resetZoomBtn.addEventListener('click', function() {
+                currentScale = 1;
+                updateScale();
+            });
+            
+            // Update the scale of the wrapper
+            function updateScale() {
+                wrapper.style.transform = `scale(${currentScale})`;
+                
+                // Adjust height of the container to fit scaled content
+                if (currentScale > 1) {
+                    wrapper.parentElement.style.height = `${wrapper.offsetHeight * currentScale}px`;
+                    wrapper.parentElement.style.overflow = 'auto';
+                } else {
+                    wrapper.parentElement.style.height = 'auto';
+                    wrapper.parentElement.style.overflow = 'hidden';
+                }
+            }
+            
+            // Handle pinch to zoom on mobile
+            wrapper.addEventListener('touchstart', function(e) {
+                if (e.touches.length === 2) {
+                    initialDistance = getDistance(e.touches[0], e.touches[1]);
+                    initialScale = currentScale;
+                    e.preventDefault();
+                }
+            }, { passive: false });
+            
+            wrapper.addEventListener('touchmove', function(e) {
+                if (e.touches.length === 2) {
+                    const currentDistance = getDistance(e.touches[0], e.touches[1]);
+                    const scaleChange = currentDistance / initialDistance;
+                    
+                    currentScale = Math.min(Math.max(initialScale * scaleChange, minScale), maxScale);
+                    updateScale();
+                    e.preventDefault();
+                }
+            }, { passive: false });
+            
+            // Calculate distance between two touch points
+            function getDistance(touch1, touch2) {
+                const dx = touch1.pageX - touch2.pageX;
+                const dy = touch1.pageY - touch2.pageY;
+                return Math.sqrt(dx * dx + dy * dy);
+            }
+        });
+    </script>
 </body>
 </html>
