@@ -223,9 +223,9 @@
             background-color: rgba(0, 0, 0, 0.6);
             color: white;
             border: none;
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            border-radius: 4px;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -242,8 +242,8 @@
         }
         
         .fullscreen-button svg {
-            width: 18px;
-            height: 18px;
+            width: 20px;
+            height: 20px;
         }
         
         /* Fullscreen and zoom controls */
@@ -480,26 +480,15 @@
                         allow="fullscreen">
                     </iframe>
                     <div class="iframe-overlay">
-                        <button class="fullscreen-button" aria-label="フルスクリーン表示">
+                        <button class="fullscreen-button" id="fullscreenBtn" aria-label="フルスクリーン表示">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M8 3H5a2 2 0 0 0-2 2v3"></path>
-                                <path d="M21 8V5a2 2 0 0 0-2-2h-3"></path>
-                                <path d="M3 16v3a2 2 0 0 0 2 2h3"></path>
-                                <path d="M16 21h3a2 2 0 0 0 2-2v-3"></path>
+                                <polyline points="15 3 21 3 21 9"></polyline>
+                                <polyline points="9 21 3 21 3 15"></polyline>
+                                <line x1="21" y1="3" x2="14" y2="10"></line>
+                                <line x1="3" y1="21" x2="10" y2="14"></line>
                             </svg>
                         </button>
                     </div>
-                </div>
-                <div class="embed-controls">
-                    <button class="control-button" id="zoomIn">
-                        <span class="control-icon">+</span> 拡大
-                    </button>
-                    <button class="control-button" id="zoomOut">
-                        <span class="control-icon">-</span> 縮小
-                    </button>
-                    <button class="control-button" id="resetZoom">
-                        <span class="control-icon">↺</span> リセット
-                    </button>
                 </div>
             </div>
             
@@ -532,106 +521,54 @@
             <div class="footer-shape"></div>
         </div>
     </footer>
-    <!-- JavaScript for zoom functionality -->
+    <!-- JavaScript for fullscreen functionality -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const wrapper = document.getElementById('canvaWrapper');
             const canvaFrame = document.getElementById('canvaFrame');
-            const zoomInBtn = document.getElementById('zoomIn');
-            const zoomOutBtn = document.getElementById('zoomOut');
-            const resetZoomBtn = document.getElementById('resetZoom');
-            const fullscreenBtn = document.querySelector('.fullscreen-button');
+            const fullscreenBtn = document.getElementById('fullscreenBtn');
             
-            let currentScale = 1;
-            const maxScale = 3;
-            const minScale = 1;
-            const scaleStep = 0.2;
-            
-            // Initialize touch events
-            let initialDistance = 0;
-            let initialScale = 1;
-            
-            // Handle button controls
-            if (zoomInBtn) {
-                zoomInBtn.addEventListener('click', function() {
-                    if (currentScale < maxScale) {
-                        currentScale += scaleStep;
-                        updateScale();
-                    }
-                });
-            }
-            
-            if (zoomOutBtn) {
-                zoomOutBtn.addEventListener('click', function() {
-                    if (currentScale > minScale) {
-                        currentScale -= scaleStep;
-                        updateScale();
-                    }
-                });
-            }
-            
-            if (resetZoomBtn) {
-                resetZoomBtn.addEventListener('click', function() {
-                    currentScale = 1;
-                    updateScale();
-                });
-            }
-            
-            // Fullscreen button
+            // Handle fullscreen button click
             if (fullscreenBtn) {
                 fullscreenBtn.addEventListener('click', function() {
-                    if (canvaFrame.requestFullscreen) {
-                        canvaFrame.requestFullscreen();
-                    } else if (canvaFrame.webkitRequestFullscreen) { /* Safari */
-                        canvaFrame.webkitRequestFullscreen();
-                    } else if (canvaFrame.msRequestFullscreen) { /* IE11 */
-                        canvaFrame.msRequestFullscreen();
-                    }
+                    launchFullscreen(canvaFrame);
                 });
             }
             
-            // Update the scale of the wrapper
-            function updateScale() {
-                wrapper.style.transform = `scale(${currentScale})`;
-                
-                // Adjust height of the container to fit scaled content
-                if (currentScale > 1) {
-                    wrapper.parentElement.style.height = `${wrapper.offsetHeight * currentScale}px`;
-                    wrapper.parentElement.style.overflow = 'auto';
+            // Launch fullscreen for different browsers
+            function launchFullscreen(element) {
+                if (element.requestFullscreen) {
+                    element.requestFullscreen();
+                } else if (element.mozRequestFullScreen) { // Firefox
+                    element.mozRequestFullScreen();
+                } else if (element.webkitRequestFullscreen) { // Chrome, Safari
+                    element.webkitRequestFullscreen();
+                } else if (element.msRequestFullscreen) { // IE/Edge
+                    element.msRequestFullscreen();
                 } else {
-                    wrapper.parentElement.style.height = 'auto';
-                    wrapper.parentElement.style.overflow = 'hidden';
+                    // Try to use Canva's native fullscreen by sending a message
+                    try {
+                        // Message format that Canva might recognize
+                        canvaFrame.contentWindow.postMessage({ action: 'toggleFullscreen' }, '*');
+                        
+                        // Fallback: Open in new tab if everything else fails
+                        const canvaUrl = canvaFrame.src.replace('?embed', '');
+                        window.open(canvaUrl, '_blank');
+                    } catch (error) {
+                        console.error('Failed to enter fullscreen mode:', error);
+                        
+                        // Last resort: Open original URL in new tab
+                        const canvaUrl = canvaFrame.src.replace('?embed', '');
+                        window.open(canvaUrl, '_blank');
+                    }
                 }
             }
             
-            // Handle pinch to zoom on mobile
-            if (wrapper) {
-                wrapper.addEventListener('touchstart', function(e) {
-                    if (e.touches.length === 2) {
-                        initialDistance = getDistance(e.touches[0], e.touches[1]);
-                        initialScale = currentScale;
-                        e.preventDefault();
-                    }
-                }, { passive: false });
-                
-                wrapper.addEventListener('touchmove', function(e) {
-                    if (e.touches.length === 2) {
-                        const currentDistance = getDistance(e.touches[0], e.touches[1]);
-                        const scaleChange = currentDistance / initialDistance;
-                        
-                        currentScale = Math.min(Math.max(initialScale * scaleChange, minScale), maxScale);
-                        updateScale();
-                        e.preventDefault();
-                    }
-                }, { passive: false });
-            }
-            
-            // Calculate distance between two touch points
-            function getDistance(touch1, touch2) {
-                const dx = touch1.pageX - touch2.pageX;
-                const dy = touch1.pageY - touch2.pageY;
-                return Math.sqrt(dx * dx + dy * dy);
-            }
+            // Add keyboard listener for ESC key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && document.fullscreenElement) {
+                    document.exitFullscreen();
+                }
+            });
         });
     </script>
 </body>
