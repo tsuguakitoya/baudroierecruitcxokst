@@ -192,7 +192,6 @@
             overflow: hidden;
             border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            cursor: pointer;
         }
         
         .canva-wrapper iframe {
@@ -202,6 +201,94 @@
             width: 100%;
             height: 100%;
             border: none;
+        }
+        
+        /* Fullscreen button */
+        .iframe-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            display: flex;
+            justify-content: flex-end;
+            align-items: flex-start;
+            padding: 10px;
+            z-index: 5;
+        }
+        
+        .fullscreen-button {
+            pointer-events: auto;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 4px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            padding: 0;
+            opacity: 0.8;
+            z-index: 10;
+        }
+        
+        .fullscreen-button:hover, .fullscreen-button:focus {
+            background-color: rgba(0, 0, 0, 0.8);
+            opacity: 1;
+        }
+        
+        .fullscreen-button svg {
+            width: 20px;
+            height: 20px;
+        }
+        
+        /* Modal Fullscreen */
+        .fullscreen-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .fullscreen-modal.active {
+            display: flex;
+        }
+        
+        .fullscreen-modal-content {
+            width: 90%;
+            height: 90%;
+            position: relative;
+        }
+        
+        .fullscreen-modal-content iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: -40px;
+            right: 0;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
         /* Fullscreen and zoom controls */
@@ -437,6 +524,16 @@
                         allowfullscreen="allowfullscreen" 
                         allow="fullscreen">
                     </iframe>
+                    <div class="iframe-overlay">
+                        <button class="fullscreen-button" id="fullscreenBtn" aria-label="フルスクリーン表示">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="15 3 21 3 21 9"></polyline>
+                                <polyline points="9 21 3 21 3 15"></polyline>
+                                <line x1="21" y1="3" x2="14" y2="10"></line>
+                                <line x1="3" y1="21" x2="10" y2="14"></line>
+                            </svg>
+                        </button>
+                    </div>
                 </div>
             </div>
             
@@ -469,25 +566,72 @@
             <div class="footer-shape"></div>
         </div>
     </footer>
-    <!-- JavaScript for Canva iframe -->
+    <!-- モーダルフルスクリーン用の要素 -->
+    <div class="fullscreen-modal" id="fullscreenModal">
+        <div class="fullscreen-modal-content">
+            <button class="close-modal" id="closeModal">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+            <iframe id="modalFrame" src="" allowfullscreen="allowfullscreen" allow="fullscreen"></iframe>
+        </div>
+    </div>
+
+    <!-- JavaScript for modal fullscreen -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const canvaFrame = document.getElementById('canvaFrame');
+            const fullscreenBtn = document.getElementById('fullscreenBtn');
+            const fullscreenModal = document.getElementById('fullscreenModal');
+            const modalFrame = document.getElementById('modalFrame');
+            const closeModal = document.getElementById('closeModal');
             
-            // Add click event to the iframe to make it fullscreen on mobile
-            if (canvaFrame) {
-                canvaFrame.addEventListener('click', function(e) {
-                    // Only handle fullscreen on mobile devices
-                    if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
-                        // Prevent default action to avoid navigation
-                        e.preventDefault();
-                        
-                        // Try opening the original Canva URL (non-embed)
-                        const canvaUrl = canvaFrame.src.replace('?embed', '');
-                        window.open(canvaUrl, '_blank');
-                    }
+            // Handle fullscreen button click
+            if (fullscreenBtn) {
+                fullscreenBtn.addEventListener('click', function(e) {
+                    e.stopPropagation(); // イベントの伝播を止める
+                    
+                    // モーダル内のiframeに同じソースを設定
+                    modalFrame.src = canvaFrame.src;
+                    
+                    // モーダルを表示
+                    fullscreenModal.classList.add('active');
+                    
+                    // スクロールを無効化
+                    document.body.style.overflow = 'hidden';
                 });
             }
+            
+            // モーダルを閉じる
+            if (closeModal) {
+                closeModal.addEventListener('click', function() {
+                    fullscreenModal.classList.remove('active');
+                    
+                    // スクロールを再有効化
+                    document.body.style.overflow = '';
+                    
+                    // 少し遅れてiframeのソースをクリア（パフォーマンス向上のため）
+                    setTimeout(function() {
+                        modalFrame.src = '';
+                    }, 300);
+                });
+            }
+            
+            // ESCキーでモーダルを閉じる
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && fullscreenModal.classList.contains('active')) {
+                    closeModal.click();
+                }
+            });
+            
+            // モーダルの外側をクリックして閉じる
+            fullscreenModal.addEventListener('click', function(e) {
+                if (e.target === fullscreenModal) {
+                    closeModal.click();
+                }
+            });
         });
     </script>
 </body>
