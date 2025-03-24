@@ -4,29 +4,109 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>baudroie inc.</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: Arial, sans-serif;
+        :root {
+            --primary-color: #F08A4B;
+            --primary-dark: #e07a3b;
+            --text-dark: #333;
+            --text-light: #555;
+            --background-light: #fafafa;
         }
         
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Noto Sans JP', 'Montserrat', sans-serif;
+            background-color: var(--background-light);
+            color: var(--text-dark);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+        
+        /* Background decoration */
+        .background-decoration {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+        
+        .circle {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.05;
+        }
+        
+        .circle-1 {
+            top: 10%;
+            left: 10%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, var(--primary-color) 0%, transparent 70%);
+            animation: float 30s infinite alternate ease-in-out;
+        }
+        
+        .circle-2 {
+            bottom: 5%;
+            right: 15%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, var(--primary-color) 0%, transparent 70%);
+            animation: float 25s infinite alternate-reverse ease-in-out;
+        }
+        
+        .circle-3 {
+            top: 40%;
+            right: 30%;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, var(--primary-color) 0%, transparent 70%);
+            animation: float 20s infinite alternate ease-in-out;
+        }
+        
+        @keyframes float {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            100% { transform: translate(20px, 20px) rotate(5deg); }
+        }
+        
+        /* Header */
         .header {
+            background-color: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            position: relative;
+            z-index: 100;
+        }
+        
+        .header-container {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
             padding: 20px;
-            background-color: white;
         }
         
         .logo {
-            color: #F08A4B;
+            color: var(--primary-color);
             font-size: 2.5rem;
-            font-weight: bold;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-decoration: none;
+            font-family: 'Montserrat', sans-serif;
         }
         
         .entry-button {
-            background-color: #F08A4B;
+            background-color: var(--primary-color);
             color: white;
             padding: 10px 30px;
             text-align: center;
@@ -34,104 +114,328 @@
             display: inline-block;
             font-size: 1.2rem;
             font-weight: bold;
-            box-shadow: 3px 3px 0 #999;
+            box-shadow: 3px 3px 0 rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            border-radius: 2px;
+            position: relative;
+            overflow: hidden;
         }
         
+        .button-effect {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.1);
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+        }
+        
+        .entry-button:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 3px 5px 0 rgba(0,0,0,0.1);
+        }
+        
+        .entry-button:hover .button-effect {
+            transform: translateX(0);
+        }
+        
+        /* Navigation */
         .nav-bar {
             background-color: #f5f5f5;
-            padding: 15px 20px;
-            border-bottom: 1px solid #ddd;
+            border-bottom: 1px solid #eee;
         }
         
-        .main-content {
-            padding: 30px;
-            max-width: 900px;
+        .nav-container {
+            max-width: 1200px;
             margin: 0 auto;
+            padding: 8px 20px;
         }
         
-        .purple-box {
-            background-color: #6600FF;
+        .nav-text {
+            font-weight: 500;
+            color: var(--text-light);
+        }
+        
+        /* Main Content */
+        .main-content {
+            position: relative;
+            z-index: 10;
+        }
+        
+        .content-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 30px 20px;
+            background: white;
+            box-shadow: 0 0 30px rgba(0,0,0,0.05);
+        }
+        
+        /* Canva Embed */
+        .canva-container {
+            margin: 30px 0;
+            position: relative;
+            background-color: #f8f8f8;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary-color);
+            padding: 15px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.05);
+        }
+        
+        .canva-wrapper {
+            position: relative;
             width: 100%;
-            height: 500px;
-            margin: 20px 0;
+            height: 0;
+            padding-top: 56.25%;
+            overflow: hidden;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
         
+        .canva-wrapper iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        /* Entry Button Large */
         .center-button {
             text-align: center;
             margin: 40px 0;
         }
         
+        .entry-button-large {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 15px 60px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 1.5rem;
+            font-weight: bold;
+            box-shadow: 3px 3px 0 rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            border-radius: 2px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .entry-button-large:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 3px 5px 0 rgba(0,0,0,0.1);
+        }
+        
+        .entry-button-large:hover .button-effect {
+            transform: translateX(0);
+        }
+        
+        /* Entry Info */
         .entry-info {
             text-align: center;
-            line-height: 1.8;
             margin: 40px 0;
+            position: relative;
+            background: linear-gradient(to right, rgba(240,138,75,0.05), rgba(240,138,75,0.1), rgba(240,138,75,0.05));
+            padding: 25px 20px;
+            border-radius: 8px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.03);
+            border: 1px solid rgba(240,138,75,0.2);
         }
         
+        .entry-info::before {
+            content: "";
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            height: 30px;
+            background-color: white;
+            border: 1px solid rgba(240,138,75,0.2);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .entry-info::after {
+            content: "💬";
+            position: absolute;
+            top: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 15px;
+        }
+        
+        .entry-info p {
+            color: var(--text-dark);
+            font-size: 1.1rem;
+            line-height: 1.8;
+            letter-spacing: 0.5px;
+            margin: 0;
+        }
+        
+        .highlight {
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+        
+        /* Footer */
         .footer {
             background-color: #333;
-            color: #F08A4B;
-            padding: 20px;
+            position: relative;
+            padding: 30px 0;
         }
         
-        .footer-content {
-            max-width: 900px;
+        .footer::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary-color), #f1b189);
+        }
+        
+        .footer-container {
+            max-width: 1000px;
             margin: 0 auto;
+            padding: 0 20px;
+            position: relative;
         }
         
         .footer-logo {
-            color: #F08A4B;
+            color: var(--primary-color);
             font-size: 2rem;
             font-weight: bold;
-            margin-bottom: 10px;
+            text-decoration: none;
+            display: block;
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+            font-family: 'Montserrat', sans-serif;
         }
         
-        .footer-address {
-            color: white;
-            line-height: 1.5;
+        .footer-address p {
+            color: #eee;
+            line-height: 1.8;
+            font-size: 0.95rem;
+        }
+        
+        .footer-decoration {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+        }
+        
+        .footer-shape {
+            position: absolute;
+            bottom: -50px;
+            right: -50px;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(240,138,75,0.05) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .logo {
+                font-size: 2rem;
+            }
+            
+            .entry-button {
+                padding: 8px 20px;
+                font-size: 1rem;
+            }
+            
+            .entry-button-large {
+                padding: 12px 40px;
+                font-size: 1.2rem;
+            }
+            
+            .content-container {
+                padding: 20px 15px;
+            }
+            
+            .circle-1, .circle-2, .circle-3 {
+                transform: scale(0.7);
+            }
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <a href="https://www.baudroie.jp/" class="logo" style="text-decoration: none;">baudroie inc.</a>
-        <a href="https://s.lmes.jp/landing-qr/1657893371-rRVdmjzQ?uLand=luSlnm" class="entry-button">ENTRY</a>
+    <div class="background-decoration">
+        <div class="circle circle-1"></div>
+        <div class="circle circle-2"></div>
+        <div class="circle circle-3"></div>
     </div>
+
+    <header class="header">
+        <div class="header-container">
+            <a href="https://www.baudroie.jp/" class="logo">baudroie inc.</a>
+            <a href="https://s.lmes.jp/landing-qr/1657893371-rRVdmjzQ?uLand=luSlnm" class="entry-button">
+                <span>ENTRY</span>
+                <div class="button-effect"></div>
+            </a>
+        </div>
+    </header>
     
     <div class="nav-bar">
-        <div>採用情報|事業統括本部</div>
-    </div>
-    
-    <div class="main-content">
-        <!-- Canva埋め込み -->
-        <div style="position: relative; width: 100%; height: 0; padding-top: 56.2500%;
- padding-bottom: 0; box-shadow: 0 2px 8px 0 rgba(63,69,81,0.16); margin-top: 1.6em; margin-bottom: 0.9em; overflow: hidden;
- border-radius: 8px; will-change: transform;">
-  <iframe loading="lazy" style="position: absolute; width: 100%; height: 100%; top: 0; left: 0; border: none; padding: 0;margin: 0;"
-    src="https://www.canva.com/design/DAGhleOMulI/nVpNXUHT83KXk3n_G4VmbQ/view?embed" allowfullscreen="allowfullscreen" allow="fullscreen">
-  </iframe>
-</div>
-        
-        <div class="center-button">
-            <a href="https://s.lmes.jp/landing-qr/1657893371-rRVdmjzQ?uLand=luSlnm" class="entry-button" style="padding: 15px 60px; font-size: 1.5rem;">ENTRY</a>
-        </div>
-        
-        <div class="entry-info">
-            エントリーについては<br>
-            上記よりLINEアカウントの追加をしていただき、<br>
-            必要の記載をお願いいたします。<br>
-            随時、担当よりご連絡いたします
+        <div class="nav-container">
+            <div class="nav-text">採用情報 | 事業統括本部</div>
         </div>
     </div>
     
-    <div class="footer">
-        <div class="footer-content">
-            <a href="https://www.baudroie.jp/" class="footer-logo" style="text-decoration: none;">baudroie inc.</a>
-            <div class="footer-address">
-                〒106-0041<br>
-                東京都港区麻布台1-3-1 麻布台ヒルズ 森JPタワー17F<br>
-                TEL:03-6807-4525
+    <main class="main-content">
+        <div class="content-container">
+            <div class="canva-container">
+                <div class="canva-wrapper">
+                    <iframe loading="lazy" 
+                        src="https://www.canva.com/design/DAGhleOMulI/nVpNXUHT83KXk3n_G4VmbQ/view?embed" 
+                        allowfullscreen="allowfullscreen" 
+                        allow="fullscreen">
+                    </iframe>
+                </div>
+            </div>
+            
+            <div class="center-button">
+                <a href="https://s.lmes.jp/landing-qr/1657893371-rRVdmjzQ?uLand=luSlnm" class="entry-button-large">
+                    <span>ENTRY</span>
+                    <div class="button-effect"></div>
+                </a>
+            </div>
+            
+            <div class="entry-info">
+                <p>エントリーについては<br>
+                上記より<span class="highlight">LINEアカウントの追加</span>をしていただき、<br>
+                必要の記載をお願いいたします。<br>
+                随時、担当よりご連絡いたします</p>
             </div>
         </div>
-    </div>
+    </main>
+    
+    <footer class="footer">
+        <div class="footer-container">
+            <a href="https://www.baudroie.jp/" class="footer-logo">baudroie inc.</a>
+            <div class="footer-address">
+                <p>〒106-0041<br>
+                東京都港区麻布台1-3-1 麻布台ヒルズ 森JPタワー17F<br>
+                TEL:03-6807-4525</p>
+            </div>
+        </div>
+        <div class="footer-decoration">
+            <div class="footer-shape"></div>
+        </div>
+    </footer>
 </body>
 </html>
